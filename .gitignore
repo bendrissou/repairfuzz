@@ -1,0 +1,18 @@
+# Upstream dependencies, fetched by scripts/setup.sh
+/third_party/
+
+# Build outputs
+/build/
+target/
+
+# Grammars are selected at build time and copied into the mutator crates
+# by scripts/build-mutator.sh; the originals live in grammars/.
+/mutator/*/src/*.l
+/mutator/*/src/*.y
+/tools/repair-cli/src/grammar.l
+/tools/repair-cli/src/grammar.y
+
+# Fuzzing output
+*.log
+findings-*/
+core

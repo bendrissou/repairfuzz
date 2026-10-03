@@ -1,0 +1,113 @@
+diff --git a/include/config.h b/include/config.h
+index 63340650..d71ff4cc 100644
+--- a/include/config.h
++++ b/include/config.h
+@@ -304,7 +304,7 @@
+ 
+ /* Sync interval (every n havoc cycles): */
+ 
+-#define SYNC_INTERVAL 8
++#define SYNC_INTERVAL 1
+ 
+ /* Sync time (minimum time between syncing in ms, time is halfed for -M main
+    nodes) - default is 30 minutes: */
+diff --git a/src/afl-fuzz-run.c b/src/afl-fuzz-run.c
+index 1ee8ebe7..14866bfa 100644
+--- a/src/afl-fuzz-run.c
++++ b/src/afl-fuzz-run.c
+@@ -158,7 +158,7 @@ write_to_testcase(afl_state_t *afl, void **mem, u32 len, u32 fix) {
+ 
+       /* if AFL_POST_PROCESS_KEEP_ORIGINAL is set then save the original memory
+          prior post-processing in new_mem to restore it later */
+-      if (unlikely(afl->afl_env.afl_post_process_keep_original)) {
++      if (unlikely(afl->afl_env.afl_post_process_keep_original) || fix == 99) {
+ 
+         new_mem = *mem;
+ 
+@@ -185,7 +185,7 @@ write_to_testcase(afl_state_t *afl, void **mem, u32 len, u32 fix) {
+       /* everything as planned. use the potentially new data. */
+       afl_fsrv_write_to_testcase(&afl->fsrv, *mem, new_size);
+ 
+-      if (likely(!afl->afl_env.afl_post_process_keep_original)) {
++      if (likely(!afl->afl_env.afl_post_process_keep_original) && fix != 99) {
+ 
+         len = new_size;
+ 
+@@ -811,7 +811,7 @@ void sync_fuzzers(afl_state_t *afl) {
+         /* See what happens. We rely on save_if_interesting() to catch major
+            errors and save the test case. */
+ 
+-        (void)write_to_testcase(afl, (void **)&mem, st.st_size, 1);
++        (void)write_to_testcase(afl, (void **)&mem, st.st_size, 99);
+ 
+         fault = fuzz_run_target(afl, &afl->fsrv, afl->fsrv.exec_tmout);
+ 
+@@ -1002,6 +1002,68 @@ u8 trim_case(afl_state_t *afl, struct queue_entry *q, u8 *in_buf) {
+ 
+   if (needs_write) {
+ 
++    // run afl_custom_post_process
++
++    if (unlikely(afl->custom_mutators_count) &&
++        likely(!afl->afl_env.afl_post_process_keep_original)) {
++
++      ssize_t new_size = q->len;
++      u8     *new_mem = in_buf;
++      u8     *new_buf = NULL;
++
++      LIST_FOREACH(&afl->custom_mutator_list, struct custom_mutator, {
++
++        if (el->afl_custom_post_process) {
++
++          new_size = el->afl_custom_post_process(el->data, new_mem, new_size,
++                                                 &new_buf);
++
++          if (unlikely(!new_buf || new_size <= 0)) {
++
++            new_size = 0;
++            new_buf = new_mem;
++
++          } else {
++
++            new_mem = new_buf;
++
++          }
++
++        }
++
++      });
++
++      if (unlikely(!new_size)) {
++
++        new_size = q->len;
++        new_mem = in_buf;
++
++      }
++
++      if (unlikely(new_size < afl->min_length)) {
++
++        new_size = afl->min_length;
++
++      } else if (unlikely(new_size > afl->max_length)) {
++
++        new_size = afl->max_length;
++
++      }
++
++      q->len = new_size;
++
++      if (new_mem != in_buf && new_mem != NULL) {
++
++        new_buf = afl_realloc(AFL_BUF_PARAM(out_scratch), new_size);
++        if (unlikely(!new_buf)) { PFATAL("alloc"); }
++        memcpy(new_buf, new_mem, new_size);
++
++        in_buf = new_buf;
++
++      }
++
++    }
++
+     s32 fd;
+ 
+     if (unlikely(afl->no_unlink)) {

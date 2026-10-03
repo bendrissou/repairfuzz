@@ -1,0 +1,8 @@
+.git
+third_party/
+build/
+**/target/
+mutator/*/src/*.l
+mutator/*/src/*.y
+tools/repair-cli/src/grammar.l
+tools/repair-cli/src/grammar.y

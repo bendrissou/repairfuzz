@@ -1,0 +1,26 @@
+[package]
+name = "json_repair"
+version = "0.1.0"
+authors = ["Bachir Bendrissou <b.bendrissou@imperial.ac.uk>"]
+edition = "2021"
+
+# The grammar that this mutator repairs against is selected at build time:
+# scripts/build-mutator.sh copies grammars/json/<variant>.{l,y} into src/json.{l,y}
+# before invoking cargo. See docs/GRAMMARS.md.
+
+[build-dependencies]
+cfgrammar = { path = "../../third_party/grmtools/cfgrammar" }
+lrlex     = { path = "../../third_party/grmtools/lrlex" }
+lrpar     = { path = "../../third_party/grmtools/lrpar" }
+
+[dependencies]
+custom_mutator = { path = "../../third_party/AFLplusplus/custom_mutators/rust/custom_mutator" }
+cfgrammar = { path = "../../third_party/grmtools/cfgrammar" }
+lrlex     = { path = "../../third_party/grmtools/lrlex" }
+lrpar     = { path = "../../third_party/grmtools/lrpar" }
+rand      = "0.8.4"
+
+[lib]
+name = "repair_json"
+path = "./src/lib.rs"
+crate-type = ["cdylib"]

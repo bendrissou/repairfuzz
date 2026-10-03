@@ -1,0 +1,23 @@
+[package]
+name = "repair-cli"
+version = "0.1.0"
+edition = "2021"
+
+# The grammar is selected at build time: scripts/build-repair-cli.sh copies
+# grammars/<lang>/<variant>.{l,y} to src/grammar.{l,y} before building.
+
+[[bin]]
+doc = false
+name = "repair-cli"
+path = "src/main.rs"
+
+[build-dependencies]
+cfgrammar = { path = "../../third_party/grmtools/cfgrammar" }
+lrlex     = { path = "../../third_party/grmtools/lrlex" }
+lrpar     = { path = "../../third_party/grmtools/lrpar" }
+
+[dependencies]
+cfgrammar = { path = "../../third_party/grmtools/cfgrammar" }
+lrlex     = { path = "../../third_party/grmtools/lrlex" }
+lrpar     = { path = "../../third_party/grmtools/lrpar" }
+rand      = "0.8.4"

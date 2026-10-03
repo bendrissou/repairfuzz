@@ -1,0 +1,83 @@
+diff --git a/lrpar/src/lib/cpctplus.rs b/lrpar/src/lib/cpctplus.rs
+index 709cfa2..5749cbb 100644
+--- a/lrpar/src/lib/cpctplus.rs
++++ b/lrpar/src/lib/cpctplus.rs
+@@ -24,6 +24,7 @@ use super::{
+ 
+ const PARSE_AT_LEAST: usize = 3; // N in Corchuelo et al.
+ const TRY_PARSE_AT_MOST: usize = 250;
++const MAX_REPAIR_TRAVERSAL_DEPTH: usize = 16_384;
+ 
+ #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+ enum Repair<StorageT> {
+@@ -325,7 +326,7 @@ where
+         }
+ 
+         let la_tidx = self.parser.next_tidx(n.laidx);
+-        let cost = (self.parser.token_cost)(la_tidx);
++        let cost = (self.parser.token_cost)(la_tidx) * 0;
+         let nn = PathFNode {
+             pstack: n.pstack.clone(),
+             laidx: n.laidx + 1,
+@@ -390,14 +391,20 @@ where
+         fn traverse<StorageT: PrimInt>(
+             finish_by: Instant,
+             rm: &Cactus<RepairMerge<StorageT>>,
++            depth: usize,
+         ) -> Option<Vec<Vec<Repair<StorageT>>>> {
+             if Instant::now() >= finish_by {
+                 return None;
+             }
++
++            if depth >= MAX_REPAIR_TRAVERSAL_DEPTH {
++                return None;
++            }
++
+             let mut out = Vec::new();
+             match *rm.val().unwrap() {
+                 RepairMerge::Repair(r) => {
+-                    let parents = traverse(finish_by, &rm.parent().unwrap())?;
++                    let parents = traverse(finish_by, &rm.parent().unwrap(), depth + 1)?;
+                     if parents.is_empty() {
+                         out.push(vec![r]);
+                     } else {
+@@ -408,7 +415,7 @@ where
+                     }
+                 }
+                 RepairMerge::Merge(r, ref vc) => {
+-                    let parents = traverse(finish_by, &rm.parent().unwrap())?;
++                    let parents = traverse(finish_by, &rm.parent().unwrap(), depth + 1)?;
+                     if parents.is_empty() {
+                         out.push(vec![r]);
+                     } else {
+@@ -418,7 +425,7 @@ where
+                         }
+                     }
+                     for c in vc.vals() {
+-                        for pc in traverse(finish_by, c)? {
++                        for pc in traverse(finish_by, c, depth + 1)? {
+                             out.push(pc);
+                         }
+                     }
+@@ -431,7 +438,7 @@ where
+         let mut all_rprs = Vec::with_capacity(cnds.len());
+         for cnd in cnds {
+             all_rprs.push(
+-                traverse(finish_by, &cnd.repairs)?
++                traverse(finish_by, &cnd.repairs, 0)?
+                     .into_iter()
+                     .map(|x| self.repair_to_parse_repair(in_laidx, &x))
+                     .collect::<Vec<_>>(),
+diff --git a/lrpar/src/lib/parser.rs b/lrpar/src/lib/parser.rs
+index 40be99f..ca98e48 100644
+--- a/lrpar/src/lib/parser.rs
++++ b/lrpar/src/lib/parser.rs
+@@ -27,7 +27,7 @@ use crate::{cpctplus, LexError, Lexeme, LexerTypes, NonStreamingLexer};
+ #[cfg(test)]
+ const RECOVERY_TIME_BUDGET: u64 = 60_000; // milliseconds
+ #[cfg(not(test))]
+-const RECOVERY_TIME_BUDGET: u64 = 500; // milliseconds
++const RECOVERY_TIME_BUDGET: u64 = 10; // milliseconds
+ 
+ /// A generic parse tree.
+ #[derive(Debug, Clone, PartialEq)]

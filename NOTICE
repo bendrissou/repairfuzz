@@ -1,0 +1,48 @@
+RepairFuzz
+Copyright 2026 Bachir Bendrissou, Alastair F. Donaldson, Cristian Cadar
+Imperial College London
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use these files except in compliance with the License. You may obtain a copy
+of the License in the LICENSE file or at
+http://www.apache.org/licenses/LICENSE-2.0
+
+This software accompanies the paper "Repair-Driven Greybox Fuzzing"
+(ISSTA 2026, doi:10.1145/3832229) and is derived from its research artefact,
+doi:10.5281/zenodo.20935256.
+
+================================================================================
+Third-party components
+================================================================================
+
+Fetched at build time, not distributed here
+-------------------------------------------
+
+scripts/setup.sh clones these; they are not vendored in this repository:
+
+  AFL++        https://github.com/AFLplusplus/AFLplusplus     Apache-2.0
+  grmtools     https://github.com/softdevteam/grmtools        Apache-2.0 OR MIT
+
+The files under patches/ are modifications to those projects and are governed
+by the respective project's licence, not by the Apache-2.0 grant above.
+
+examples/quickstart/run.sh downloads and builds LuaJIT (https://luajit.org,
+MIT) at run time. It is not distributed here.
+
+Grammars
+--------
+
+  grammars/*/custom.{l,y}
+      Ported to Lex/Yacc from the Nautilus project's bug-finding grammars,
+      https://github.com/nautilus-fuzz/nautilus (MIT licence).
+
+  grammars/lua/standard.{l,y}, grammars/php/standard.{l,y}
+      Derived from the lrpar grammar collection,
+      https://github.com/softdevteam/grammars.
+
+  grammars/ruby/standard.{l,y}, grammars/js/standard.{l,y}
+      Written for this project, based on published BNF descriptions of the
+      respective languages.
+
+  grammars/*/corpus.{l,y}
+      Derived from the standard grammars above, modified for this project.

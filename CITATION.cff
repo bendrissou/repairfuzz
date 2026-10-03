@@ -1,0 +1,50 @@
+cff-version: 1.2.0
+message: "If you use RepairFuzz in academic work, please cite the ISSTA 2026 paper."
+title: "RepairFuzz: repair-driven greybox fuzzing"
+abstract: >-
+  RepairFuzz is a greybox fuzzer built on AFL++ that combines byte-level input
+  mutation with grammar-based input repair using the CPCT+ error-recovery
+  algorithm.
+authors:
+  - family-names: Bendrissou
+    given-names: Bachir
+    affiliation: Imperial College London
+  - family-names: Donaldson
+    given-names: Alastair F.
+    affiliation: Imperial College London
+  - family-names: Cadar
+    given-names: Cristian
+    affiliation: Imperial College London
+license: Apache-2.0
+type: software
+preferred-citation:
+  type: article
+  title: "Repair-Driven Greybox Fuzzing"
+  authors:
+    - family-names: Bendrissou
+      given-names: Bachir
+      affiliation: Imperial College London
+    - family-names: Donaldson
+      given-names: Alastair F.
+      affiliation: Imperial College London
+    - family-names: Cadar
+      given-names: Cristian
+      affiliation: Imperial College London
+  journal: "Proceedings of the ACM on Software Engineering"
+  volume: 3
+  issue: ISSTA
+  year: 2026
+  month: 10
+  doi: 10.1145/3832229
+references:
+  - type: data
+    title: 'Research Artefact for "Repair-Driven Greybox Fuzzing"'
+    authors:
+      - family-names: Bendrissou
+        given-names: Bachir
+      - family-names: Donaldson
+        given-names: Alastair F.
+      - family-names: Cadar
+        given-names: Cristian
+    year: 2026
+    doi: 10.5281/zenodo.20935256
